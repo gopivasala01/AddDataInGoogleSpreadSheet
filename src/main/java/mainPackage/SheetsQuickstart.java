@@ -26,19 +26,22 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 
 public class SheetsQuickstart {
 
+	public static String currentTime="";
     private static final String APPLICATION_NAME = "Google Sheets API Java Quickstart";
     private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
     private static final String TOKENS_DIRECTORY_PATH = "tokens/path";
-    private static final List<String> SCOPES =
-            Arrays.asList(SheetsScopes.SPREADSHEETS, SheetsScopes.DRIVE);
+    private static final List<String> SCOPES = Arrays.asList(SheetsScopes.SPREADSHEETS, SheetsScopes.DRIVE);
     private static final String CREDENTIALS_FILE_PATH = "/google-credentials.json";
     private static final String SPREADSHEET_ID = "1EMaAmoOqalGaY9Xj8XzQ_5cC97VpKsH8qkBxHhPNt98";
-    private static final String RANGE = "Sheet3!A2:D";
+    private static final String RANGE = "Sheet3!A3:D";
+    private static final String DATE = "Sheet3!B1";
 
     public static void main(String... args) throws IOException, GeneralSecurityException {
         // Connect to MS SQL Server
@@ -77,6 +80,17 @@ public class SheetsQuickstart {
                         .update(SPREADSHEET_ID, RANGE, body)
                         .setValueInputOption("RAW")
                         .execute();
+                
+                
+             // Create a ValueRange object with the date value
+                String date = getCurrentDateTime();
+                ValueRange valueRange = new ValueRange().setValues(Arrays.asList(Arrays.asList(date)));
+
+                // Update the cell with the date value
+                sheetsService.spreadsheets().values()
+                        .update(SPREADSHEET_ID, DATE, valueRange)
+                        .setValueInputOption("RAW")
+                        .execute();
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -102,4 +116,13 @@ public class SheetsQuickstart {
     	    LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(8888).build();
     	    return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
     	  }
+    
+    public static String getCurrentDateTime()
+    {
+    	 DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");  
+		 LocalDateTime now = LocalDateTime.now();  
+		// System.out.println(dtf.format(now));
+		 currentTime = dtf.format(now);
+		 return currentTime;
+    }
 }
