@@ -37,8 +37,8 @@ public class SheetsQuickstart {
     private static final List<String> SCOPES =
             Arrays.asList(SheetsScopes.SPREADSHEETS, SheetsScopes.DRIVE);
     private static final String CREDENTIALS_FILE_PATH = "/google-credentials.json";
-    private static final String SPREADSHEET_ID = "1qS3mhy1rPQdyUOX6zgSPOR8B_YHkhRs-t5vku80UdMM";
-    private static final String RANGE = "Sheet1!A2:D";
+    private static final String SPREADSHEET_ID = "1EMaAmoOqalGaY9Xj8XzQ_5cC97VpKsH8qkBxHhPNt98";
+    private static final String RANGE = "Sheet3!A2:D";
 
     public static void main(String... args) throws IOException, GeneralSecurityException {
         // Connect to MS SQL Server
