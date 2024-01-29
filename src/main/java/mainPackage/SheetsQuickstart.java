@@ -15,7 +15,6 @@ import com.google.api.services.sheets.v4.SheetsScopes;
 import com.google.api.services.sheets.v4.model.ClearValuesRequest;
 import com.google.api.services.sheets.v4.model.ValueRange;
 
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,6 +25,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
@@ -34,6 +34,9 @@ import java.util.List;
 public class SheetsQuickstart {
 
 	public static String currentTime="";
+	public static String updatedDate="";
+	public static String[][] DateFromDatabase;
+	public static String connectionUrl = "jdbc:sqlserver://azrsrv001.database.windows.net;databaseName=HomeRiverDB;user=service_sql02;password=xzqcoK7T;encrypt=true;trustServerCertificate=true;";
     private static final String APPLICATION_NAME = "Google Sheets API Java Quickstart";
     private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
     private static final String TOKENS_DIRECTORY_PATH = "tokens/path";
@@ -59,9 +62,16 @@ public class SheetsQuickstart {
                             .build();
 
                 // Clear existing data in Google Sheets
-                sheetsService.spreadsheets().values()
-                        .clear(SPREADSHEET_ID, RANGE, new ClearValuesRequest())
-                        .execute();
+                try {
+                	 sheetsService.spreadsheets().values()
+                     .clear(SPREADSHEET_ID, RANGE, new ClearValuesRequest())
+                     .execute();
+                	 System.out.println("Cleared existing data in the sheet");
+                }
+               catch(Exception e) {
+            	   e.printStackTrace();
+            	   System.out.println("Error while clearing existing data in the sheet");
+               }
 
                 // Add data to Google Sheets
                 List<List<Object>> values = new java.util.ArrayList<>();
@@ -74,23 +84,29 @@ public class SheetsQuickstart {
 
                     values.add(Arrays.asList(col1, col2, col3,col4));
                 }
+                try {
+                	 ValueRange body = new ValueRange().setValues(values);
+                     sheetsService.spreadsheets().values()
+                             .update(SPREADSHEET_ID, RANGE, body)
+                             .setValueInputOption("RAW")
+                             .execute();
+                     
+                     
+                  // Create a ValueRange object with the date value
+                     ValueRange valueRange = new ValueRange().setValues(Arrays.asList(Arrays.asList(updatedDate)));
 
-                ValueRange body = new ValueRange().setValues(values);
-                sheetsService.spreadsheets().values()
-                        .update(SPREADSHEET_ID, RANGE, body)
-                        .setValueInputOption("RAW")
-                        .execute();
-                
-                
-             // Create a ValueRange object with the date value
-                String date = getCurrentDateTime();
-                ValueRange valueRange = new ValueRange().setValues(Arrays.asList(Arrays.asList(date)));
-
-                // Update the cell with the date value
-                sheetsService.spreadsheets().values()
-                        .update(SPREADSHEET_ID, DATE, valueRange)
-                        .setValueInputOption("RAW")
-                        .execute();
+                     // Update the cell with the date value
+                     sheetsService.spreadsheets().values()
+                             .update(SPREADSHEET_ID, DATE, valueRange)
+                             .setValueInputOption("RAW")
+                             .execute();
+                 	System.out.println("Adding data to the sheet is successful");
+                }
+                catch(Exception e) {
+                	e.printStackTrace();
+              	   	System.out.println("Error while adding data to the sheet");
+                }
+               
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -117,12 +133,62 @@ public class SheetsQuickstart {
     	    return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
     	  }
     
-    public static String getCurrentDateTime()
+    public static boolean getCurrentDateTime()
     {
-    	 DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");  
-		 LocalDateTime now = LocalDateTime.now();  
-		// System.out.println(dtf.format(now));
-		 currentTime = dtf.format(now);
-		 return currentTime;
+    	String sqlQuery = "select top 1 [LastUpdated] from DBO.HomeRiverTableLastUpdateTimeStamp";
+    	try
+    	{
+    	        Connection con = null;
+    	        Statement stmt = null;
+    	        ResultSet rs = null;
+    	            //Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+    	            con = DriverManager.getConnection(connectionUrl);
+    	            String SQL = sqlQuery;
+    	            stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+    	           // stmt = con.createStatement();
+    	            stmt.setQueryTimeout(60);
+    	            rs = stmt.executeQuery(SQL);
+    	            int rows =0;
+    	            if (rs.last()) 
+    	            {
+    	            	rows = rs.getRow();
+    	            	// Move to beginning
+    	            	rs.beforeFirst();
+    	            }
+    	            if(rows>1 || rows == 0) {
+    	            	return false;
+    	            	
+    	            }
+    	            System.out.println("No of Rows = "+rows);
+    	            DateFromDatabase = new String[rows][1];
+    	            int  i=0;
+    	            while(rs.next())
+    	            {
+    	  
+    	            	String 	ID = rs.getObject(1).toString();
+    	            	
+    	              //stateCode
+    	                try 
+    	                {
+    	                	if(ID==null)
+    	                		DateFromDatabase[i][0] = "";
+    	                	else
+    	                	{
+    	                		DateFromDatabase[i][0] = ID;
+    	                		updatedDate = DateFromDatabase[i][0];
+    	                	}
+    	                }
+    	                catch(Exception e)
+    	                {
+    	                	DateFromDatabase[i][0] = "";
+    	                }
+    	            }
+    	}
+    	catch(Exception e)
+    	{
+    		e.printStackTrace();
+    		return false;
+    	}
+    	return true;
     }
 }
