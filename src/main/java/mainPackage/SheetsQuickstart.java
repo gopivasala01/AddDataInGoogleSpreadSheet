@@ -102,6 +102,7 @@ public class SheetsQuickstart {
                      
                   // Create a ValueRange object with the date value
                      getCurrentDateTime();
+                     updatedDate = CommonMethods.convertDate(updatedDate);
                      ValueRange valueRange = new ValueRange().setValues(Arrays.asList(Arrays.asList(updatedDate)));
 
                      // Update the cell with the date value

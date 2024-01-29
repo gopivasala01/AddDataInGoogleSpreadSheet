@@ -1,7 +1,10 @@
 package mainPackage;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.Properties;
 
 
@@ -89,5 +92,40 @@ public class CommonMethods {
 	         throw new RuntimeException(e);
 	      }
 	   }
+	
+	
+	public static String convertDate(String dateRaw) {
+	    dateRaw = dateRaw.replaceAll(" /", " ");
+
+	    if (dateRaw.trim().isEmpty() || dateRaw.matches(".*[a-zA-Z]+.*") || dateRaw.trim().equals("0")) {
+	        return " ";
+	    }
+
+	    String[] dateFormats = {
+	    	"yyyy-MM-dd hh:mm:ss",
+	        "dd-MM-yyyy hh:mm:ss",
+	        "dd-MM-yy",
+	        "MM/dd/yy",
+	        "MM/dd//yy",
+	        "MMMM dd,yyyy",
+	        "MMMM dd. yyyy",
+	        "MMMM dd ,yyyy"
+	    };
+
+	    for (String format : dateFormats) {
+	        try {
+	            SimpleDateFormat inputFormat = new SimpleDateFormat(format);
+	            SimpleDateFormat outputFormat = new SimpleDateFormat("MM-dd-yyyy hh:mm:ss");
+	            Date date = inputFormat.parse(dateRaw.trim().replaceAll(" +", " "));
+	            System.out.println(outputFormat.format(date));
+	            return outputFormat.format(date);
+	        } catch (ParseException ignored) {
+	            // Continue to the next format
+	        }
+	    }
+
+	    // If none of the formats match, extract the date part
+	    return dateRaw.split(" ")[0].replace("-", "/");
+	}
 
 }
