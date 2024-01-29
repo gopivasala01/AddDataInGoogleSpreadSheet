@@ -84,6 +84,7 @@ public class SheetsQuickstart {
 
                     values.add(Arrays.asList(col1, col2, col3,col4));
                 }
+                
                 try {
                 	 ValueRange body = new ValueRange().setValues(values);
                      sheetsService.spreadsheets().values()
@@ -93,6 +94,7 @@ public class SheetsQuickstart {
                      
                      
                   // Create a ValueRange object with the date value
+                     getCurrentDateTime();
                      ValueRange valueRange = new ValueRange().setValues(Arrays.asList(Arrays.asList(updatedDate)));
 
                      // Update the cell with the date value
