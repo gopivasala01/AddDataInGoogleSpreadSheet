@@ -86,7 +86,7 @@ public class SheetsQuickstart {
                     // Assuming column1, column2, column3 are of type String
                     String col1 = resultSet.getString("Table Name");
                     String col2 = resultSet.getString("Loads Type");
-                    String col3 = resultSet.getString("MAX AsOfDate");
+                    String col3 = CommonMethods.convertDate(resultSet.getString("MAX AsOfDate"));
                     String col4 = resultSet.getString("PW Timing Filter");
 
                     values.add(Arrays.asList(col1, col2, col3,col4));
