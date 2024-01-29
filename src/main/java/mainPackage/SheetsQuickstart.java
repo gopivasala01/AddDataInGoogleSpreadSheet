@@ -46,7 +46,7 @@ public class SheetsQuickstart {
     private static final String RANGE = "Sheet3!A3:D";
     private static final String DATE = "Sheet3!B1";
 
-    public static void main(String... args) throws IOException, GeneralSecurityException {
+    public static boolean addingDatatoSheets() throws IOException, GeneralSecurityException {
         // Connect to MS SQL Server
         try (Connection connection = DriverManager.getConnection("jdbc:sqlserver://azrsrv001.database.windows.net;databaseName=HomeRiverDB;", "service_sql02", "xzqcoK7T")) {
             // Query MS SQL Server
@@ -63,14 +63,21 @@ public class SheetsQuickstart {
 
                 // Clear existing data in Google Sheets
                 try {
+                	//clearing date
+                	 sheetsService.spreadsheets().values()
+                     .clear(SPREADSHEET_ID, DATE, new ClearValuesRequest())
+                     .execute();
+                	 
+                	//clearing remaining data
                 	 sheetsService.spreadsheets().values()
                      .clear(SPREADSHEET_ID, RANGE, new ClearValuesRequest())
                      .execute();
+                	 
                 	 System.out.println("Cleared existing data in the sheet");
                 }
                catch(Exception e) {
-            	   e.printStackTrace();
             	   System.out.println("Error while clearing existing data in the sheet");
+            	return false;
                }
 
                 // Add data to Google Sheets
@@ -102,17 +109,19 @@ public class SheetsQuickstart {
                              .update(SPREADSHEET_ID, DATE, valueRange)
                              .setValueInputOption("RAW")
                              .execute();
-                 	System.out.println("Adding data to the sheet is successful");
+                 	
                 }
                 catch(Exception e) {
-                	e.printStackTrace();
-              	   	System.out.println("Error while adding data to the sheet");
+              	   
+              	   	return false;
                 }
                
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        	return false;
         }
+		return true;
     }
 
     private static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT)
